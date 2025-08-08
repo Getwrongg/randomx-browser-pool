@@ -1,0 +1,29 @@
+export type HelloMsg = {
+  type: 'hello',
+  clientId: string,
+  version: string,
+  ua: string,
+  threads: number,
+  supportsSharedMemory: boolean
+}
+export type WantJobMsg = { type: 'wantJob', clientId: string, lastJobId?: string, avgHashrate?: number }
+export type ShareMsg = { type: 'share', clientId: string, jobId: string, nonce: number, hashHex: string, token: string }
+export type HeartbeatMsg = { type: 'heartbeat', clientId: string, jobId?: string, hashrate: number, cpuPct: number, threads: number, memMode: 'SAB'|'AB' }
+export type StopMsg = { type: 'stop', clientId: string, jobId?: string }
+
+export type ClientMsg = HelloMsg | WantJobMsg | ShareMsg | HeartbeatMsg | StopMsg
+
+export type JobMsg = {
+  type: 'job',
+  jobId: string,
+  keyHex: string,
+  startNonce: number,
+  nonceCount: number,
+  difficulty: number,
+  token: string,
+  timeLimitMs: number
+}
+
+export type AckShare = { type: 'ackShare', jobId: string, nonce: number, status: 'accepted'|'rejected', reason?: string }
+export type ServerConfig = { type: 'config', cpuPctMax: number, maxThreads: number, reconnectBackoffMs: number }
+export type ServerError = { type: 'error', code: string, message: string }

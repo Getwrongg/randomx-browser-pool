@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid'
 import type { ServerJob, AckShare, ServerConfig } from './types'
 import { startWorkers, stopWorkers, setThrottle } from './workerController'
 
@@ -37,9 +36,7 @@ export function makeWsClient(opts: Opts) {
       }))
       ws!.send(JSON.stringify({ type: 'wantJob', clientId: opts.clientId }))
     }
-    ws.onclose = () => {
-      opts.onClose()
-    }
+    ws.onclose = () => { opts.onClose() }
     ws.onmessage = async (ev) => {
       const msg = JSON.parse(ev.data)
       if (msg.type === 'config') {
@@ -62,17 +59,12 @@ export function makeWsClient(opts: Opts) {
             }
             opts.onHashrate(hs)
           },
-          onShare: (share) => {
-            ws?.send(JSON.stringify({ type: 'share', clientId: opts.clientId, ...share }))
-          },
-          onDoneRange: () => {
-            ws?.send(JSON.stringify({ type: 'wantJob', clientId: opts.clientId, lastJobId: job.jobId }))
-          }
+          onShare: (share) => { ws?.send(JSON.stringify({ type: 'share', clientId: opts.clientId, ...share })) },
+          onDoneRange: () => { ws?.send(JSON.stringify({ type: 'wantJob', clientId: opts.clientId, lastJobId: job.jobId })) }
         })
       } else if (msg.type === 'ackShare') {
         const ack = msg as AckShare
-        if (ack.status === 'accepted') opts.onAccepted()
-        else opts.onRejected()
+        if (ack.status === 'accepted') opts.onAccepted(); else opts.onRejected()
       } else if (msg.type === 'error') {
         console.error('server error', msg)
       }

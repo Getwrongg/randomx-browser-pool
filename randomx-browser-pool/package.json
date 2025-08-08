@@ -12,5 +12,8 @@
   "description": "",
   "devDependencies": {
     "eslint": "^9.32.0"
+  },
+  "dependencies": {
+    "react": "^19.1.1"
   }
 }

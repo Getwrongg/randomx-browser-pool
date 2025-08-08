@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Coordinator Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="preconnect" href="/" />
+    <link rel="stylesheet" href="/admin/admin.css" />
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <div class="dot"></div>
+            <span>Coordinator Portal</span>
+        </div>
+        <nav class="actions">
+            <button id="refreshBtn" class="btn">Refresh</button>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="grid grid-3">
+            <div class="card metric">
+                <div class="metric-label">Total Hashrate</div>
+                <div id="totalHashrate" class="metric-value">0.0 H/s</div>
+            </div>
+            <div class="card metric">
+                <div class="metric-label">Active Workers</div>
+                <div id="workerCount" class="metric-value">0</div>
+            </div>
+            <div class="card metric">
+                <div class="metric-label">Difficulty</div>
+                <div class="row">
+                    <div id="difficulty" class="metric-value">—</div>
+                    <div class="inline-form">
+                        <input id="difficultyInput" type="number" min="1" max="64" step="1" />
+                        <button id="setDifficultyBtn" class="btn small">Set</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Workers</h2>
+                <div class="filters">
+                    <input id="filterText" type="text" placeholder="Filter by ID or UA…" />
+                    <select id="sortSelect">
+                        <option value="hashrate">Sort: Hashrate</option>
+                        <option value="lastSeen">Sort: Last Seen</option>
+                        <option value="threads">Sort: Threads</option>
+                        <option value="accepted">Sort: Accepted</option>
+                        <option value="rejected">Sort: Rejected</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User-Agent</th>
+                            <th>Threads</th>
+                            <th>SAB</th>
+                            <th>Job</th>
+                            <th>H/s</th>
+                            <th>Accepted</th>
+                            <th>Rejected</th>
+                            <th>Last Seen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="workersBody">
+                        <!-- rows injected -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <span>© Coordinator Node</span>
+        <span id="lastUpdate">Last update: —</span>
+    </footer>
+
+    <script src="/admin/admin.js" type="module"></script>
+</body>
+</html>

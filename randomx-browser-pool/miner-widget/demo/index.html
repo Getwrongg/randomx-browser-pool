@@ -1,0 +1,23 @@
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Miner Widget Demo</title>
+    <link rel="stylesheet" href="../widget.css" />
+    <style>body{background:#0b0e1d;margin:0;padding:24px;color:#e6e8ff;font-family:system-ui,Segoe UI,Roboto,Arial}</style>
+  </head>
+  <body>
+    <h1>Miner Widget Demo (Toy Mode)</h1>
+    <div id="miner-root"></div>
+
+    <script type="module">
+      import { initMinerWidget } from '../widget.js'
+      initMinerWidget({
+        container: document.getElementById('miner-root'),
+        defaultUrl: 'ws://127.0.0.1:8080/ws'
+      })
+    </script>
+  </body>
+</html>

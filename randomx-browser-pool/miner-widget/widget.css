@@ -1,0 +1,21 @@
+
+:root{--bg:#0f1221;--card:#151936;--muted:#98a0c8;--text:#e6e8ff;--accent:#4f8cff;--border:#262a4b;--ok:#22c55e;--warn:#f59e0b;--bad:#ef4444}
+.mw{font-family:system-ui,Segoe UI,Roboto,Arial;color:var(--text);background:linear-gradient(180deg,rgba(30,33,60,.5),rgba(20,23,45,.85));border:1px solid var(--border);border-radius:14px;padding:14px;max-width:840px}
+.mw .hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.mw .brand{display:flex;align-items:center;gap:8px;font-weight:700}
+.mw .dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--accent),#8ab6ff)}
+.mw .status{display:flex;align-items:center;gap:8px}.mw .d{width:8px;height:8px;border-radius:50%}.mw .ok{background:var(--ok)}.mw .bad{background:var(--bad)}.mw .warn{background:var(--warn)}
+.mw .row{display:flex;gap:12px;flex-wrap:wrap}
+.mw .card{background:#0c0f20;border:1px solid var(--border);border-radius:10px;padding:10px;flex:1;min-width:240px}
+.mw label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+.mw input[type=text],.mw input[type=number]{background:#0c0f20;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px}
+.mw input[type=range]{width:200px}
+.mw .btn{border:1px solid var(--border);background:linear-gradient(180deg,#1e254a,#182042);color:var(--text);padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer}
+.mw .btn.secondary{background:#0c0f20}
+.mw .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:700px){.mw .grid{grid-template-columns:repeat(2,1fr)}}
+.mw .stat{background:#0f1328;border:1px solid var(--border);border-radius:8px;padding:10px}
+.mw .muted{color:var(--muted);font-size:12px}
+.mw .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.mw .panel{max-width:680px;background:#0c0f20;border:1px solid var(--border);border-radius:12px;padding:16px}
+.mw .actions{display:flex;gap:10px;justify-content:flex-end}

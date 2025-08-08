@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Toy Miner – Auto Connect</title>
+    <style>
+        :root {
+            --bg: #0b0e1d;
+            --text: #e6e8ff;
+            --muted: #9aa1c9;
+            --border: #262a4b
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui,Segoe UI,Roboto,Arial
+        }
+
+        .wrap {
+            max-width: 960px;
+            margin: 32px auto;
+            padding: 0 16px
+        }
+
+        .hero {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        img {
+            max-width: 420px;
+            border-radius: 12px;
+            border: 1px solid var(--border)
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            background: linear-gradient(180deg,rgba(30,33,60,.5),rgba(20,23,45,.85))
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .pill {
+            position: fixed;
+            right: 12px;
+            bottom: 12px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #0c1026
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+            background: #ef4444
+        }
+
+            .dot.ok {
+                background: #22c55e
+            }
+
+        code {
+            background: #0c0f20;
+            border: 1px solid var(--border);
+            padding: 2px 6px;
+            border-radius: 6px
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="hero">
+            <img src="https://picsum.photos/800/520" alt="Random scenic" />
+            <div class="card" style="flex:1;min-width:280px">
+                <h1>Sample Page</h1>
+                <p class="muted">A regular page with an image. Toy miner auto-connects on load (visible below).</p>
+                <p class="muted">Coordinator: <code id="coord">ws://127.0.0.1:8080/ws</code></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Visible status (no controls) -->
+    <div class="pill">
+        <div><span id="dot" class="dot"></span><strong id="st">Connecting…</strong></div>
+        <div class="muted" id="rate">0.0 H/s • A:0 • R:0</div>
+    </div>
+
+    <script>
+        // ---- Config
+        const WS_URL = (new URLSearchParams(location.search).get('ws')) || 'ws://127.0.0.1:8080/ws';
+        document.getElementById('coord').textContent = WS_URL;
+
+        // ---- UI helpers
+        const $ = sel => document.querySelector(sel);
+        const dot = $('#dot'), st = $('#st'), rate = $('#rate');
+        const clientId = (localStorage.getItem('toy_client_id') || (crypto.randomUUID ? crypto.randomUUID() : String(Date.now())));
+        localStorage.setItem('toy_client_id', clientId);
+
+        function setStatus(label, ok = false) { st.textContent = label; dot.classList.toggle('ok', ok) }
+        function fmtHs(x) { if (x >= 1e6) return (x / 1e6).toFixed(2) + ' MH/s'; if (x >= 1e3) return (x / 1e3).toFixed(2) + ' kH/s'; return (x || 0).toFixed(1) + ' H/s' }
+
+        // ---- Auto-connect on load
+        let ws = null, jobId = null, running = false;
+        let accepted = 0, rejected = 0, hashrate = 0, lastHb = 0;
+
+        function connectAndRun() {
+            const threads = Math.max(1, Math.min(navigator.hardwareConcurrency || 8, 2));
+            const cpuPct = 50;
+
+            ws = new WebSocket(WS_URL);
+            ws.onopen = () => {
+                setStatus('Connected', true);
+                ws.send(JSON.stringify({ type: 'hello', clientId, version: 'toy-auto-0.1.0', ua: navigator.userAgent, threads, supportsSharedMemory: typeof SharedArrayBuffer !== 'undefined' }));
+                ws.send(JSON.stringify({ type: 'wantJob', clientId }));
+            };
+            ws.onclose = () => setStatus('Disconnected', false);
+            ws.onmessage = (ev) => {
+                const msg = JSON.parse(ev.data);
+                if (msg.type === 'job') {
+                    jobId = msg.jobId;
+                    if (!running) { running = true; setStatus('Mining', true) }
+                    runToyLoop(msg, cpuPct, threads);
+                } else if (msg.type === 'ackShare') {
+                    if (msg.status === 'accepted') accepted++; else rejected++;
+                    rate.textContent = `${fmtHs(hashrate)} • A:${accepted} • R:${rejected}`;
+                }
+            };
+        }
+
+        // ---- Toy loop (matches your toy topology; fake work)
+        function runToyLoop(job, cpuPct, threads) {
+            let nonce = job.startNonce;
+            const end = job.startNonce + job.nonceCount;
+
+            function step() {
+                if (!ws) return;
+                const slice = Math.max(50, Math.floor(1000 * (cpuPct / 100)));
+                let did = 0;
+
+                for (let i = 0; i < slice && nonce < end; i++, nonce++) {
+                    did++;
+                    // Occasionally emit a valid-ish share for toy difficulty
+                    if (Math.random() < 0.00001) {
+                        const rand = Math.random().toString(16).slice(2).padEnd(64, '0');
+                        const targetPrefix = '0'.repeat(job.difficulty);
+                        const hashHex = rand.startsWith(targetPrefix) ? rand : targetPrefix + rand.slice(job.difficulty);
+                        ws.send(JSON.stringify({ type: 'share', clientId, jobId: job.jobId, nonce, hashHex, token: job.token }));
+                    }
+                }
+
+                hashrate = did;
+                const now = Date.now();
+                if (now - lastHb > 2000) {
+                    ws.send(JSON.stringify({ type: 'heartbeat', clientId, jobId: job.jobId, hashrate, cpuPct, threads, memMode: (typeof SharedArrayBuffer !== 'undefined') ? 'SAB' : 'AB' }));
+                    lastHb = now;
+                }
+                rate.textContent = `${fmtHs(hashrate)} • A:${accepted} • R:${rejected}`;
+
+                if (nonce >= end) ws.send(JSON.stringify({ type: 'wantJob', clientId, lastJobId: job.jobId }));
+                setTimeout(step, Math.max(0, (100 - cpuPct) * 0.5)); // crude throttle
+            }
+            step();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            setStatus('Connecting…', false);
+            connectAndRun();
+            console.log('Auto-connect toy miner started. SAB:', typeof SharedArrayBuffer !== 'undefined' ? 'available' : 'not available');
+        });
+    </script>
+</body>
+</html>

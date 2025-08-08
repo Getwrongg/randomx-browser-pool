@@ -16,7 +16,7 @@ app.use(helmet({
 mountAdmin(app)
 
 const server = app.listen(config.port, () => {
-  console.log(`HTTP listening on http://localhost:${config.port}`)
+  console.log(`HTTP listening on http://127.0.0.1:${config.port}`)
 })
 
 const wss = new WebSocketServer({ server, path: config.wsPath })
